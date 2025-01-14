@@ -1,16 +1,41 @@
-<!DOCTYPE html>
+import os
+import json
+
+def c_to_arabic_no(number):
+    western_numbers = '0123456789'
+    arabic_numbers = '٠١٢٣٤٥٦٧٨٩'
+    translation_table = str.maketrans(western_numbers, arabic_numbers)
+    return str(number).translate(translation_table)
+
+def generate_quran_html(json_dir, output_dir):
+    os.makedirs(output_dir, exist_ok=True)
+
+    files = [f for f in os.listdir(json_dir) if f.endswith('.json')]
+
+    for file in files:
+        with open(os.path.join(json_dir, file), 'r', encoding='utf-8') as f:
+            surah = json.load(f)
+
+        file_name = os.path.splitext(file)[0]
+        surah_number = int(file_name)
+        surah_data = surah[str(surah_number)]
+
+        prev_surah = surah_number - 1 if surah_number > 1 else 114
+        next_surah = surah_number + 1 if surah_number < 114 else 1
+
+        html_content = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>quran4universe - At-Takasur</title>
+<title>quran4universe - {surah_data['name_latin']}</title>
 </head>
 <body>
 <div class="header">
 <h1><a style="color:#fff;text-decoration:none;" href="/">quran4universe</a></h1>
 <h4>
-<a href="101.html">《 </a> التكاثر (At-Takasur) (Bermegah-Megahan)
-<a href="103.html"> 》</a>
+<a href="{prev_surah}.html">《 </a> {surah_data['name']} ({surah_data['name_latin']}) ({surah_data['translations']['id']['name']})
+<a href="{next_surah}.html"> 》</a>
 </h4>
 <div class="slider-container">
 <label for="fontSizeSlider" style="color: white;">Adjust Font Size:</label>
@@ -18,25 +43,16 @@
 </div>
 </div>
 <div class="contents">
+'''
 
-<h1>اَلْهٰىكُمُ التَّكَاثُرُۙ &#1757١</h1><div style="text-align:center">
-<p>1. Bermegah-megahan telah melalaikan kamu,</p><hr/></div>
-<h1>حَتّٰى زُرْتُمُ الْمَقَابِرَۗ &#1757٢</h1><div style="text-align:center">
-<p>2. sampai kamu masuk ke dalam kubur.</p><hr/></div>
-<h1>كَلَّا سَوْفَ تَعْلَمُوْنَۙ &#1757٣</h1><div style="text-align:center">
-<p>3. Sekali-kali tidak! Kelak kamu akan mengetahui (akibat perbuatanmu itu),</p><hr/></div>
-<h1>ثُمَّ كَلَّا سَوْفَ تَعْلَمُوْنَ  &#1757٤</h1><div style="text-align:center">
-<p>4. kemudian sekali-kali tidak! Kelak kamu akan mengetahui.</p><hr/></div>
-<h1>كَلَّا لَوْ تَعْلَمُوْنَ عِلْمَ الْيَقِيْنِۗ &#1757٥</h1><div style="text-align:center">
-<p>5. Sekali-kali tidak! Sekiranya kamu mengetahui dengan pasti,</p><hr/></div>
-<h1>لَتَرَوُنَّ الْجَحِيْمَۙ &#1757٦</h1><div style="text-align:center">
-<p>6. niscaya kamu benar-benar akan melihat neraka Jahim,</p><hr/></div>
-<h1>ثُمَّ لَتَرَوُنَّهَا عَيْنَ الْيَقِيْنِۙ &#1757٧</h1><div style="text-align:center">
-<p>7. kemudian kamu benar-benar akan melihatnya dengan mata kepala sendiri,</p><hr/></div>
-<h1>ثُمَّ لَتُسْـَٔلُنَّ يَوْمَىِٕذٍ عَنِ النَّعِيْمِ ࣖ &#1757٨</h1><div style="text-align:center">
-<p>8. kemudian kamu benar-benar akan ditanya pada hari itu tentang kenikmatan (yang megah di dunia itu).</p><hr/></div>
+        for ayah_number, ayah_text in surah_data['text'].items():
+            html_content += f'''
+<h1>{ayah_text} &#1757{c_to_arabic_no(ayah_number)}</h1><div style="text-align:center">
+<p>{ayah_number}. {surah_data['translations']['id']['text'][ayah_number]}</p><hr/></div>'''
+
+        html_content += f'''
 </div>
-<h4><a href="101.html">《 </a> navigation button <a href="103.html"> 》</a></h4>
+<h4><a href="{prev_surah}.html">《 </a> navigation button <a href="{next_surah}.html"> 》</a></h4>'''+'''
 <style type="text/css" media="all">
 body {
 margin: 0;
@@ -96,3 +112,12 @@ document.body.style.fontSize = value + "px";
 </script>
 </body>
 </html>
+'''
+
+        output_file = os.path.join(output_dir, f'{surah_number}.html')
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+
+json_dir = 'quran-json'
+output_dir = 'quran-id'
+generate_quran_html(json_dir, output_dir)
