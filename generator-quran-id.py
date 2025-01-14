@@ -38,7 +38,7 @@ def generate_quran_html(json_dir, output_dir):
 <a href="{next_surah}.html"> 》</a>
 </h4>
 <div class="slider-container">
-<label for="fontSizeSlider" style="color: white;">Adjust Font Size:</label>
+<label for="fontSizeSlider" style="color: white;">ubah ukuran teks:</label>
 <input id="fontSizeSlider" type="range" min="12" max="32" value="16" oninput="adjustFontSize(this.value)">
 </div>
 </div>
